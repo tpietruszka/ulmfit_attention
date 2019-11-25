@@ -17,18 +17,29 @@ class LSTMOpen(nn.Module):
             raise NotImplementedError("Not supported yet")  # TODO: implement dropout as in LSTM
         super(LSTMOpen, self).__init__()
         self.cell = nn.LSTMCell(input_size, hidden_size, bias)
+        # enable LSTM-like access to parameters, so that load_state_dict() will work (with strict=False)
+        self.weight_ih_l0 = self.cell.weight_ih
+        self.weight_hh_l0 = self.cell.weight_hh
+        self.bias_ih_l0 = self.cell.bias_ih
+        self.bias_hh_l0 = self.cell.bias_hh
 
-        # TODO: write a test
-        # TODO: implement reset
-        # TODO: implement loading
-        # TODO: add logging all memory states
+        # TODO: add option to log all memory states
 
-    def forward(self, input: Tensor, hidden: Tuple[Tensor, Tensor]) -> Tuple[Tensor, Tuple[Tensor, Tensor]]:
-        bs, sl, di = input.shape
-        new_hidden = hidden
+    def forward(self, inp: Tensor, hidden: Tuple[Tensor, Tensor]) -> Tuple[Tensor, Tuple[Tensor, Tensor]]:
+        bs, sl, di = inp.shape
+        hx, cx = (hidden[0].squeeze(0), hidden[1].squeeze(0))
         outputs = []
         for i in range(sl):
-            out, new_hidden = self.cell(input[:, i, :], new_hidden)
-            print(f'{i}: {out.shape} - {new_hidden.shape}')
-            outputs.append(out)
-        return torch.cat(outputs), new_hidden
+            hx, cx = self.cell(inp[:, i, :], (hx, cx))
+            outputs.append(hx)
+        results = torch.stack(outputs).transpose(0, 1)
+        return results, (hx.unsqueeze(0), cx.unsqueeze(0))
+
+    def reset(self):
+        return self.cell.reset()
+
+    def load_params_from_lstm(self, orig: nn.LSTM):
+        self.cell.weight_ih = orig.weight_ih_l0
+        self.cell.weight_hh = orig.weight_hh_l0
+        self.cell.bias_ih = orig.bias_ih_l0
+        self.cell.bias_hh = orig.bias_hh_l0
