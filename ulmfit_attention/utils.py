@@ -1,5 +1,5 @@
 from abc import ABCMeta
-
+from dataclasses import dataclass
 
 class RegisteredAbstractMeta(ABCMeta):
     """
@@ -24,3 +24,36 @@ class RegisteredAbstractMeta(ABCMeta):
         else:
             x.subclass_registry[name] = x
         return x
+
+
+@dataclass
+class Fit1CycleParams:
+    """
+    Describing one phase of fast.ai `fit_one_cycle` training.
+    This class should be used like:
+    ```
+        params = Fit1CycleParams(-1, 1)
+        learn.freeze_to(params.freeze_to)
+        learn.fit_one_cycle(**params.to_dict())
+    ```
+    """
+    freeze_to: int
+    cyc_len: int
+    lr_max_last: float = 1e-3
+    lr_last_to_first_ratio: float = (2.6 ** 4)  # lr_max_first == lr_max_last / lr_last_to_first_ratio
+    moms: (float, float) = (0.8, 0.7)
+    div_factor: float = 25.0
+    pct_start: float = 0.3
+    wd: float = None
+
+    @staticmethod
+    def keys():
+        return ['cyc_len', 'max_lr', 'moms', 'div_factor', 'pct_start', 'wd']
+
+    def __getitem__(self, item):
+        if item == 'max_lr':
+            return slice(self.lr_max_last / self.lr_last_to_first_ratio, self.lr_max_last)
+        return getattr(self, item)
+
+    def to_dict(self):
+        return {k: self[k] for k in self.keys()}
