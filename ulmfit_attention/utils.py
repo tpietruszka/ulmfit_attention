@@ -1,6 +1,7 @@
 from abc import ABCMeta
 from dataclasses import dataclass
 
+
 class RegisteredAbstractMeta(ABCMeta):
     """
     A class created by this metaclass and with `is_registry=True` will have a mapping of (name -> class) to all its
@@ -10,17 +11,20 @@ class RegisteredAbstractMeta(ABCMeta):
     >>> class A(metaclass=RegisteredAbstractMeta, is_registry=True):
     ...     pass
     >>> class B(A):
+    ...     def __init__(self, num):
+    ...         self.num = num
     ...     def greet(self):
-    ...         print('B-greet')
-    >>> b_instance = A.subclass_registry['B']()
+    ...         print(f'B-greet-{self.num}')
+    >>> b_instance = A.factory('B', {'num':3})
     >>> b_instance.greet()
-    B-greet
+    B-greet-3
     """
 
     def __new__(mcs, name, bases, class_dct, **kwargs):
         x = super().__new__(mcs, name, bases, class_dct)
         if kwargs.get('is_registry', False):
             x.subclass_registry = {}
+            x.factory = lambda cname, params: x.subclass_registry[cname](**params)
         else:
             x.subclass_registry[name] = x
         return x

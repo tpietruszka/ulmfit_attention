@@ -16,10 +16,6 @@ class Aggregation(nn.Module, metaclass=RegisteredAbstractMeta, is_registry=True)
         """Should return the dimension of the returned hidden state (per-sample dimension)"""
         pass
 
-    @classmethod
-    def factory(cls, name: str, params: Dict) -> 'Aggregation':
-        return cls.subclass_registry[name](**params)
-
 
 class BranchingAttentionAggregation(Aggregation):
     def __init__(self, dv: int, att_hid_layers: Sequence[int], att_dropouts: Union[float, Sequence[float]],
