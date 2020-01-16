@@ -3,10 +3,10 @@ from typing import *
 from torch import nn, Tensor
 from torch.functional import F
 from fastai.text import bn_drop_lin
-from .utils import RegisteredAbstractMeta
+from .utils import RegisteredAbstractMeta, Configurable
 
 
-class Aggregation(nn.Module, metaclass=RegisteredAbstractMeta, is_registry=True):
+class Aggregation(nn.Module, Configurable, metaclass=RegisteredAbstractMeta, is_registry=True):
     @abc.abstractmethod
     def forward(self, inp: Tensor, mask: Tensor = None) -> Tensor:
         pass
@@ -30,6 +30,17 @@ class BranchingAttentionAggregation(Aggregation):
         self.dv = dv
         self.last_weights = None
         self.last_features = None
+
+    @classmethod
+    def get_default_config(cls) -> Dict:
+        return {
+            "att_hid_layers": [50],
+            "att_dropouts": [0, 0],
+            "att_bn": False,
+            "agg_layers": [10],
+            "agg_dropouts": 0,
+            "agg_bn": False
+        }
 
     @property
     def output_dim(self):

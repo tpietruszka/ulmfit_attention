@@ -1,5 +1,9 @@
-from abc import ABCMeta
-from dataclasses import dataclass
+from abc import ABCMeta, abstractmethod, ABC
+from typing import *
+from copy import deepcopy
+import dataclasses
+
+factories = {}
 
 
 class RegisteredAbstractMeta(ABCMeta):
@@ -25,39 +29,50 @@ class RegisteredAbstractMeta(ABCMeta):
         if kwargs.get('is_registry', False):
             x.subclass_registry = {}
             x.factory = lambda cname, params: x.subclass_registry[cname](**params)
+            if name in factories.keys():
+                raise RuntimeError(f"Factory-class {name} defined more than once!")
+            else:
+                factories[name] = x
         else:
             x.subclass_registry[name] = x
         return x
 
 
-@dataclass
-class Fit1CycleParams:
+class Configurable(ABC):
     """
-    Describing one phase of fast.ai `fit_one_cycle` training.
-    This class should be used like:
-    ```
-        params = Fit1CycleParams(-1, 1)
-        learn.freeze_to(params.freeze_to)
-        learn.fit_one_cycle(**params.to_dict())
-    ```
+    Base class for classes created with metaclass=RegisteredAbstractMeta
+    Ensures that mappings of default values are provided in a consistent way and enables easy construction from
+    a partial config
     """
-    freeze_to: int
-    cyc_len: int
-    lr_max_last: float = 1e-3
-    lr_last_to_first_ratio: float = (2.6 ** 4)  # lr_max_first == lr_max_last / lr_last_to_first_ratio
-    moms: (float, float) = (0.8, 0.7)
-    div_factor: float = 25.0
-    pct_start: float = 0.3
-    wd: float = None
+    classNameField = 'className'
 
-    @staticmethod
-    def keys():
-        return ['cyc_len', 'max_lr', 'moms', 'div_factor', 'pct_start', 'wd']
+    @classmethod
+    @abstractmethod
+    def get_default_config(cls) -> Dict:
+        pass
 
-    def __getitem__(self, item):
-        if item == 'max_lr':
-            return slice(self.lr_max_last / self.lr_last_to_first_ratio, self.lr_max_last)
-        return getattr(self, item)
+    @classmethod
+    @abstractmethod
+    def factory(cls, cname, params) -> 'Configurable':
+        pass
 
-    def to_dict(self):
-        return {k: self[k] for k in self.keys()}
+    @classmethod
+    def from_config(cls, params) -> 'Configurable':
+        params = deepcopy(params)
+        cname = params[cls.classNameField]
+        del params[cls.classNameField]
+
+        full = cls.subclass_registry[cname].get_default_config()
+        full.update(params)
+        return cls.factory(cname, full)
+
+
+def dataclass_defaults_to_dict(cls: type) -> Dict:
+    """Takes a dataclass-decorated class (not instance), returns a dict of default values"""
+    res = {}
+    for f in dataclasses.fields(cls):
+        if not isinstance(f.default, dataclasses._MISSING_TYPE):
+            res[f.name] = f.default
+        if not isinstance(f.default_factory, dataclasses._MISSING_TYPE):
+            res[f.name] = f.default_factory()
+    return res
