@@ -28,7 +28,7 @@ class SmallTrainSample(Scenario):
     @staticmethod
     def single_run(params) -> Tuple[float, Dict, Optional[Learner]]:
         dp = params['scenario']['dataset']
-        seed = params['scenario']['seed']
+        seed = params['seed']
         dataset = datasets.Dataset.from_config(dp)
         data_clas = dataset.get_training_sample(seed=seed)
         torch.manual_seed(seed)
@@ -49,7 +49,7 @@ class SmallTrainSample(Scenario):
         pred, labels = learn.get_preds(DatasetType.Valid)
 
         # TODO: add options to include other metrics
-        acc = accuracy(pred, labels)
+        acc = float(accuracy(pred, labels))
 
         stats = {
             'train_losses': train_losses,
