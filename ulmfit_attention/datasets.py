@@ -1,5 +1,5 @@
 from fastai.text import *
-from .utils import RegisteredAbstractMeta, Configurable
+from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable
 
 
 class Dataset(Configurable, metaclass=RegisteredAbstractMeta, is_registry=True):

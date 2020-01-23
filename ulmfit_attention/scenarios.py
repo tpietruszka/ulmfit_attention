@@ -1,27 +1,11 @@
-import abc
 import torch
 import numpy as np
 from fastai.text import Learner, AWD_LSTM, DatasetType, accuracy
 from typing import *
-from .utils import RegisteredAbstractMeta, Configurable
-from . import datasets
-from . import training
-from .learner import text_classifier_learner_custom
-
-
-class Scenario(Configurable, metaclass=RegisteredAbstractMeta, is_registry=True):
-    @staticmethod
-    @abc.abstractmethod
-    def single_run(params) -> Tuple[float, Dict, Optional[Learner]]:
-        pass
-
-    @classmethod
-    def get_default_config(cls) -> Dict:
-        return {}
-
-    def __init__(self, **kwargs):
-        """Allows for parameters to be passed, but used directly by components"""
-        pass
+from hyperspace_explorer.scenario_base import Scenario
+from ulmfit_attention import datasets
+from ulmfit_attention import training
+from ulmfit_attention.learner import text_classifier_learner_custom
 
 
 class SmallTrainSample(Scenario):

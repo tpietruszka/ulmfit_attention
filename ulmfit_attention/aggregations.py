@@ -3,7 +3,7 @@ from typing import *
 from torch import nn, Tensor
 from torch.functional import F
 from fastai.text import bn_drop_lin
-from .utils import RegisteredAbstractMeta, Configurable
+from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable
 
 
 class Aggregation(nn.Module, Configurable, metaclass=RegisteredAbstractMeta, is_registry=True):

@@ -1,5 +1,5 @@
 from fastai.text import *
-from .utils import RegisteredAbstractMeta, Configurable, dataclass_defaults_to_dict
+from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable, dataclass_defaults_to_dict
 
 
 @dataclass
