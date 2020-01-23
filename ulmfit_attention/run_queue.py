@@ -5,18 +5,18 @@ import datetime
 from dataclasses import dataclass
 from pathlib import Path
 
-TaskId = ObjectId
+RunId = ObjectId
 
 
 @dataclass
-class Task:
-    id: TaskId
-    name: str
+class QueuedRun:
+    id: RunId
+    task_name: str
     params: Dict
-    description_file: Path
+    task_description_file: Path
 
 
-class TaskQueue:
+class RunQueue:
     """
     Representation of the task queue, returning only the tasks defined in the local tasks_dir
     """
@@ -42,7 +42,7 @@ class TaskQueue:
     def get_task_path(self, task_name: str) -> Path:
         return self.tasks_dir / f'{task_name}.json'
 
-    def fetch_one(self) -> Optional[Task]:
+    def fetch_one(self) -> Optional[QueuedRun]:
         """Returns a task to compute, marking it as taken, but not fully removing from the queue"""
         available_tasks = self.get_available_tasks()
         query = {self.taskname_field: {'$in': available_tasks},
@@ -54,16 +54,16 @@ class TaskQueue:
         t = self.queue.find_one_and_update(query, update)
         if t is None:
             return None
-        task = Task(id=t[self.id_field], name=t[self.taskname_field],
-                    params=t[self.params_field], description_file=self.get_task_path(t[self.taskname_field]))
+        task = QueuedRun(id=t[self.id_field], task_name=t[self.taskname_field],
+                         params=t[self.params_field], task_description_file=self.get_task_path(t[self.taskname_field]))
         return task
 
-    def remove(self, task: Task) -> int:
+    def remove(self, task: QueuedRun) -> int:
         """Permanently removes the given task from the queue"""
         res = self.queue.delete_one({self.id_field: task.id})
         return res.deleted_count
 
-    def submit(self, task_name: str, params: Dict) -> TaskId:
+    def submit(self, task_name: str, params: Dict) -> RunId:
         res = self.queue.insert_one({
             self.taskname_field: task_name,
             self.params_field: params,
