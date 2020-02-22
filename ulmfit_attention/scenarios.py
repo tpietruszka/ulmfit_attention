@@ -11,13 +11,13 @@ from ulmfit_attention.learner import text_classifier_learner_custom
 class SmallTrainSample(Scenario):
     @staticmethod
     def single_run(params) -> Tuple[float, Dict, Optional[Learner]]:
-        dp = params['scenario']['dataset']
+        dataset_params = params['scenario']['dataset']
         seed = params['seed']
-        dataset = datasets.Dataset.from_config(dp)
-        data_clas = dataset.get_training_sample(seed=seed)
+        dataset = datasets.Dataset.from_config(dataset_params)
+        data_bunch = dataset.get_training_sample(seed=seed)
         torch.manual_seed(seed)
         np.random.seed(seed)
-        learn = text_classifier_learner_custom(data_clas, AWD_LSTM, params['aggregation'])
+        learn = text_classifier_learner_custom(data_bunch, AWD_LSTM, params['aggregation'])
         _ = learn.load_encoder('fwd_enc')
 
         schedule = training.TrainingSchedule.from_config(params['training_schedule'])
