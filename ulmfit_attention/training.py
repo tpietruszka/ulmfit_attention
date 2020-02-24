@@ -1,5 +1,5 @@
 from fastai.text import *
-from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable, dataclass_defaults_to_dict
+from hyperspace_explorer.configurables import RegisteredAbstractMeta, ConfigurableDataclass
 
 
 @dataclass
@@ -35,7 +35,7 @@ class Fit1CycleParams:
         return {k: self[k] for k in self.keys()}
 
 
-class TrainingSchedule(Configurable, metaclass=RegisteredAbstractMeta, is_registry=True):
+class TrainingSchedule(ConfigurableDataclass, metaclass=RegisteredAbstractMeta, is_registry=True):
     @abc.abstractmethod
     def generate(self) -> List[Fit1CycleParams]:
         pass
@@ -47,10 +47,6 @@ class DefaultSchedule(TrainingSchedule):
     cycles_final: int = 2
     lr_init: float = 2e-2
     wd: float = 0.1
-
-    @classmethod
-    def get_default_config(cls) -> Dict:
-        return dataclass_defaults_to_dict(cls)
 
     def generate(self) -> List[Fit1CycleParams]:
         return [
