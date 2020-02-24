@@ -1,11 +1,11 @@
 import torch
 import numpy as np
-from fastai.text import Learner, AWD_LSTM, DatasetType, accuracy
+from fastai.text import Learner, DatasetType, accuracy
 from typing import *
 from hyperspace_explorer.scenario_base import Scenario
 from ulmfit_attention import datasets
 from ulmfit_attention import training
-from ulmfit_attention.learner import text_classifier_learner_custom
+from ulmfit_attention.learner import Classifier
 
 
 class SmallTrainSample(Scenario):
@@ -17,10 +17,11 @@ class SmallTrainSample(Scenario):
         data_bunch = dataset.get_training_sample(seed=seed)
         torch.manual_seed(seed)
         np.random.seed(seed)
-        learn = text_classifier_learner_custom(data_bunch, AWD_LSTM, params['aggregation'])
+        c = Classifier.from_config(params['Classifier'])
+        learn = c.get_learner(data_bunch)
         _ = learn.load_encoder('fwd_enc')
 
-        schedule = training.TrainingSchedule.from_config(params['training_schedule'])
+        schedule = training.TrainingSchedule.from_config(params['TrainingSchedule'])
         train_losses = []
 
         for phase in schedule.generate():

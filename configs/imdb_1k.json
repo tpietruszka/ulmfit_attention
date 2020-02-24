@@ -1,13 +1,14 @@
 {
-  "aggregation": {
-    "className": "BranchingAttentionAggregation"
+  "Classifier": {
+    "className": "AggregatingClassifier",
+    "Aggregation": {
+        "className": "BranchingAttentionAggregation",
+        "agg_layers": [50, 20]
+    },
+    "lin_ftrs": [50],
+    "drop_mult": 1
   },
-  "classifier": {
-    "lin_ftrs": [],
-    "drop_mult": 0.5
-  },
-  "training_schedule": {
-    "className": "DefaultSchedule",
-    "cycles_final": 3
+  "TrainingSchedule": {
+    "className": "DefaultSchedule"
   }
 }
