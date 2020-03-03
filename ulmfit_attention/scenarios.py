@@ -11,7 +11,7 @@ from ulmfit_attention.learner import Classifier
 class SmallTrainSample(Scenario):
     @staticmethod
     def single_run(params) -> Tuple[float, Dict, Optional[Learner]]:
-        dataset_params = params['scenario']['dataset']
+        dataset_params = params['Scenario']['Dataset']
         seed = params['seed']
         dataset = datasets.Dataset.from_config(dataset_params)
         data_bunch = dataset.get_training_sample(seed=seed)

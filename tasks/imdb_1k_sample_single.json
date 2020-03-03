@@ -1,7 +1,7 @@
 {
-  "scenario": {
+  "Scenario": {
     "className": "SmallTrainSample",
-    "dataset": {
+    "Dataset": {
       "className": "IMDB",
       "size": 1000,
       "bs": 24,
