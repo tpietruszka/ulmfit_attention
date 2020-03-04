@@ -15,6 +15,16 @@ class Classifier(ConfigurableDataclass, metaclass=RegisteredAbstractMeta, is_reg
 
 
 @dataclass
+class BaselineClassifier(Classifier):
+    drop_mult: float = 1.
+    lin_ftrs: Collection[int] = field(default_factory=lambda: [50])
+
+    def get_learner(self, db: TextClasDataBunch) -> 'RNNLearner':
+        return text_classifier_learner(db, AWD_LSTM, lin_ftrs=self.lin_ftrs,
+                                       drop_mult=self.drop_mult)
+
+
+@dataclass
 class AggregatingClassifier(Classifier):
     Aggregation: Dict
     drop_mult: float = 1.
