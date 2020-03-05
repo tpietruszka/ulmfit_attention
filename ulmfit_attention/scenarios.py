@@ -9,12 +9,13 @@ from ulmfit_attention.learner import Classifier
 
 
 class SmallTrainSample(Scenario):
-    @staticmethod
-    def single_run(params) -> Tuple[float, Dict, Optional[Learner]]:
-        dataset_params = params['Scenario']['Dataset']
+    def __init__(self, Dataset: Dict):
+        super().__init__()
+        self.dataset = datasets.Dataset.from_config(Dataset)
+
+    def single_run(self, params) -> Tuple[float, Learner]:
         seed = params['seed']
-        dataset = datasets.Dataset.from_config(dataset_params)
-        data_bunch = dataset.get_training_sample(seed=seed)
+        data_bunch = self.dataset.get_training_sample(seed=seed)
         torch.manual_seed(seed)
         np.random.seed(seed)
         c = Classifier.from_config(params['Classifier'])
@@ -29,14 +30,14 @@ class SmallTrainSample(Scenario):
             learn.fit_one_cycle(**phase.to_dict())
             train_losses.append([float(x) for x in learn.recorder.losses])
 
-        data_full = dataset.get_test_as_valid()
+        data_full = self.dataset.get_test_as_valid()
         learn.data = data_full
         pred, labels = learn.get_preds(DatasetType.Valid)
 
         # TODO: add options to include other metrics
         acc = float(accuracy(pred, labels))
 
-        stats = {
-            'train_losses': train_losses,
-        }
-        return acc, stats, learn
+        self.info['train_losses'] = train_losses
+        return acc, learn
+
+
