@@ -1,7 +1,9 @@
+import copy
+import gc
 import torch
 import numpy as np
-from fastai.text import Learner, DatasetType, accuracy
 from typing import *
+from fastai.text import Learner, DatasetType, accuracy
 from hyperspace_explorer.scenario_base import Scenario
 from ulmfit_attention import datasets
 from ulmfit_attention import training
@@ -41,3 +43,31 @@ class SmallTrainSample(Scenario):
         return acc, learn
 
 
+class RepeatedSmallTrainSample(Scenario):
+    def __init__(self, Dataset: Dict, num_folds: int):
+        super().__init__()
+        self.Dataset = Dataset
+        self.num_folds = num_folds
+
+    def single_run(self, params) -> Tuple[float, None]:
+        params = copy.deepcopy(params)
+        seed = params['seed']
+
+        accuracies = []
+        for i in range(seed, seed + self.num_folds):
+            fold = SmallTrainSample(self.Dataset)
+            params['seed'] = i
+            acc, _ = fold.single_run(params)
+            del _
+            gc.collect()
+            accuracies.append(acc)
+            self.log_scalar('fold_accuracy', acc, i)
+
+            self.info[i] = {}
+            if fold._metrics:
+                self.info[i]['metrics'] = fold._metrics
+            if fold.info:
+                self.info[i].update(fold.info)
+
+        mean_accuracy = sum(accuracies) / len(accuracies)
+        return mean_accuracy, None
