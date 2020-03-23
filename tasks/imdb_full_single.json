@@ -1,0 +1,12 @@
+{
+  "Scenario": {
+    "className": "SmallTrainSample",
+    "Dataset": {
+      "className": "IMDB",
+      "size": 25000,
+      "bs": 24,
+      "eval_bs": 80
+    }
+  },
+  "seed": 0
+}
