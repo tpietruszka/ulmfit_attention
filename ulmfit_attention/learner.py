@@ -29,6 +29,7 @@ class AggregatingClassifier(Classifier):
     Aggregation: Dict
     drop_mult: float = 1.
     lin_ftrs: Collection[int] = field(default_factory=lambda: [50])
+    label_smoothing_eps: float = 0.
 
     def get_learner(self, db: TextClasDataBunch) -> 'RNNLearner':
         "Create a `Learner` with a text classifier from `db`"
@@ -37,6 +38,7 @@ class AggregatingClassifier(Classifier):
         model = self.get_text_classifier(vocab_sz, n_class)
         meta = self.get_encoder_meta()
         learn = RNNLearner(db, model, split_func=meta['split_clas'])
+        learn.loss_func = FlattenedLoss(LabelSmoothingCrossEntropy, eps=self.label_smoothing_eps)
         return learn
 
     @staticmethod
