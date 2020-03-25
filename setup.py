@@ -10,8 +10,8 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "fastai>=1.0.59",
-        "pytorch>=1.3.1",
-        "hyperspace_explorer>=0.2.0",
+        "torch>=1.3.1",
+        "hyperspace_explorer>=0.3.1",
     ],
     tests_require=["pytest",],
 )
