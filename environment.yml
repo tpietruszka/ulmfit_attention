@@ -24,7 +24,6 @@ dependencies:
   - dbus=1.13.12=h746ee38_0
   - decorator=4.4.1=py_0
   - expat=2.2.6=he6710b0_0
-  - fastprogress=0.1.22=py_0
   - fontconfig=2.13.0=h9420a91_0
   - freetype=2.9.1=h8a8886c_1
   - glib=2.63.1=h5a9c865_0
@@ -134,6 +133,8 @@ dependencies:
     - docopt==0.6.2
     - entrypoints==0.3
     - execnet==1.7.1
+    - fastai==1.0.60
+    - fastprogress==0.2.2
     - future==0.18.2
     - gitdb2==2.0.6
     - gitpython==3.0.5
