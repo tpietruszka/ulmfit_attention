@@ -2,6 +2,7 @@ import abc
 from typing import *
 from torch import nn, Tensor
 from torch.functional import F
+import torch
 from fastai.text import bn_drop_lin
 from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable
 
@@ -18,12 +19,15 @@ class Aggregation(nn.Module, Configurable, metaclass=RegisteredAbstractMeta, is_
 
 
 class BranchingAttentionAggregation(Aggregation):
-    def __init__(self, dv: int, att_hid_layers: Sequence[int], att_dropouts: Union[float, Sequence[float]],
+    def __init__(self, dv: int, att_hid_layers: Optional[Sequence[int]], att_dropouts: Union[float, Sequence[float]],
                  agg_layers: Sequence[int], agg_dropouts: Union[float, Sequence[float]], att_bn: bool = False,
                  agg_bn: bool = False):
         super().__init__()
-        att_layers = [dv] + list(att_hid_layers) + [1]
-        self.head = MultiLayerPointwise(att_layers, att_dropouts, batchnorm=att_bn)
+        if att_hid_layers is None:
+            self.head = None
+        else:
+            att_layers = [dv] + list(att_hid_layers) + [1]
+            self.head = MultiLayerPointwise(att_layers, att_dropouts, batchnorm=att_bn)
         self.agg_dims = agg_layers
         if agg_layers:
             self.agg = MultiLayerPointwise([dv] + list(agg_layers), agg_dropouts, batchnorm=agg_bn)
@@ -47,7 +51,11 @@ class BranchingAttentionAggregation(Aggregation):
         return self.agg_dims[-1] if self.agg_dims else self.dv
 
     def forward(self, inp, mask=None):
-        weights_unnorm = self.head(inp).squeeze(-1)
+        if self.head:
+            weights_unnorm = self.head(inp).squeeze(-1)
+        else:
+            weights_unnorm = torch.ones(inp.shape[:2], dtype=inp.dtype, layout=inp.layout, device=inp.device)
+
         if mask is not None:
             weights_unnorm = weights_unnorm.masked_fill_(mask, 0)
         weights = F.softmax(weights_unnorm, dim=1)
