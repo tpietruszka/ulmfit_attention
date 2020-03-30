@@ -1,10 +1,10 @@
 import abc
 from typing import *
-from torch import nn, Tensor
-from torch.functional import F
 import torch
 from fastai.text import bn_drop_lin
 from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable
+from torch import nn, Tensor
+from torch.functional import F
 
 
 class Aggregation(nn.Module, Configurable, metaclass=RegisteredAbstractMeta, is_registry=True):
@@ -24,10 +24,10 @@ class BranchingAttentionAggregation(Aggregation):
                  agg_bn: bool = False):
         super().__init__()
         if att_hid_layers is None:
-            self.head = None
+            self.att = None
         else:
             att_layers = [dv] + list(att_hid_layers) + [1]
-            self.head = MultiLayerPointwise(att_layers, att_dropouts, batchnorm=att_bn)
+            self.att = MultiLayerPointwise(att_layers, att_dropouts, batchnorm=att_bn)
         self.agg_dims = agg_layers
         if agg_layers:
             self.agg = MultiLayerPointwise([dv] + list(agg_layers), agg_dropouts, batchnorm=agg_bn)
@@ -51,8 +51,8 @@ class BranchingAttentionAggregation(Aggregation):
         return self.agg_dims[-1] if self.agg_dims else self.dv
 
     def forward(self, inp, mask=None):
-        if self.head:
-            weights_unnorm = self.head(inp).squeeze(-1)
+        if self.att:
+            weights_unnorm = self.att(inp).squeeze(-1)
         else:
             weights_unnorm = torch.ones(inp.shape[:2], dtype=inp.dtype, layout=inp.layout, device=inp.device)
 
