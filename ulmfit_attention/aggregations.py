@@ -9,7 +9,7 @@ from torch.functional import F
 
 class Aggregation(nn.Module, Configurable, metaclass=RegisteredAbstractMeta, is_registry=True):
     @abc.abstractmethod
-    def forward(self, inp: Tensor, mask: Tensor = None) -> Tensor:
+    def forward(self, inp: Tensor, mask: Tensor) -> Tensor:
         pass
 
     @abc.abstractmethod
@@ -50,15 +50,15 @@ class BranchingAttentionAggregation(Aggregation):
     def output_dim(self):
         return self.agg_dims[-1] if self.agg_dims else self.dv
 
-    def forward(self, inp, mask=None):
+    def forward(self, inp, mask):
         if self.att:
             weights_unnorm = self.att(inp).squeeze(-1)
-        else:
-            weights_unnorm = torch.ones(inp.shape[:2], dtype=inp.dtype, layout=inp.layout, device=inp.device)
-
-        if mask is not None:
             weights_unnorm = weights_unnorm.masked_fill_(mask, 0)
-        weights = F.softmax(weights_unnorm, dim=1)
+            weights = F.softmax(weights_unnorm, dim=1)
+        else:
+            weights_unnorm = mask.logical_not().type_as(inp)
+            weights = weights_unnorm / weights_unnorm.sum(dim=1)[:, None]
+
         self.last_weights = weights.detach().cpu()
         if self.agg_dims:
             to_agg = self.agg(inp)
