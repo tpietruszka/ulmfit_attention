@@ -1,5 +1,4 @@
 from fastai.text import *
-import torch.cuda
 from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable
 
 
@@ -24,10 +23,6 @@ class IMDB(Dataset):
         self.size = size
         self.bs = bs
         self.eval_bs = eval_bs
-        mem_mb = torch.cuda.get_device_properties(0).total_memory / 1024 / 1024
-        if mem_mb > 16000:
-            self.eval_bs *= 2
-            print(f'Detected >16GB GPU memory. Increasing eval_bs to {self.eval_bs}')
         self.path = untar_data(URLs.IMDB)
         self.vocab_path = self.path / 'itos.pkl'
         self.vocab = Vocab.load(self.vocab_path)
@@ -43,13 +38,13 @@ class IMDB(Dataset):
 
     def get_test_as_valid(self) -> TextClasDataBunch:
         try:
-            ds = load_data(self.path, self._test_set_cache, bs=self.eval_bs)
+            ds = load_data(self.path, self._test_set_cache, bs=self.bs)
         except FileNotFoundError:
             print('Loading the test set from source, no cached version found')
             ds = (TextList.from_folder(self.path, vocab=self.vocab)
                   .split_by_folder(valid='test')
                   .label_from_folder(classes=['neg', 'pos'])
-                  .databunch(bs=self.eval_bs))
+                  .databunch(bs=self.bs))
             ds.save(self._test_set_cache)
         return ds
 
