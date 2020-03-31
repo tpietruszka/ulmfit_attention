@@ -1,6 +1,5 @@
 import abc
 from typing import *
-import torch
 from fastai.text import bn_drop_lin
 from hyperspace_explorer.configurables import RegisteredAbstractMeta, Configurable
 from torch import nn, Tensor
@@ -20,8 +19,8 @@ class Aggregation(nn.Module, Configurable, metaclass=RegisteredAbstractMeta, is_
 
 class BranchingAttentionAggregation(Aggregation):
     def __init__(self, dv: int, att_hid_layers: Optional[Sequence[int]], att_dropouts: Union[float, Sequence[float]],
-                 agg_layers: Sequence[int], agg_dropouts: Union[float, Sequence[float]], att_bn: bool = False,
-                 agg_bn: bool = False):
+                 agg_layers: Sequence[int], agg_dropouts: Union[float, Sequence[float]], att_bn: bool, agg_bn: bool,
+                 att_mask_fix: bool):
         super().__init__()
         if att_hid_layers is None:
             self.att = None
@@ -34,6 +33,10 @@ class BranchingAttentionAggregation(Aggregation):
         self.dv = dv
         self.last_weights = None
         self.last_features = None
+        if att_mask_fix:  # initially, by mistake, masking was done with 0s, before applying softmax
+            self.pre_softmax_mask_fill = float("-inf")
+        else:
+            self.pre_softmax_mask_fill = 0
 
     @classmethod
     def get_default_config(cls) -> Dict:
@@ -41,6 +44,7 @@ class BranchingAttentionAggregation(Aggregation):
             "att_hid_layers": [50],
             "att_dropouts": [0, 0],
             "att_bn": False,
+            "att_mask_fix": False,  # recommended: True
             "agg_layers": [10],
             "agg_dropouts": 0,
             "agg_bn": False
@@ -53,7 +57,7 @@ class BranchingAttentionAggregation(Aggregation):
     def forward(self, inp, mask):
         if self.att:
             weights_unnorm = self.att(inp).squeeze(-1)
-            weights_unnorm = weights_unnorm.masked_fill_(mask, 0)
+            weights_unnorm = weights_unnorm.masked_fill_(mask, self.pre_softmax_mask_fill)
             weights = F.softmax(weights_unnorm, dim=1)
         else:
             weights_unnorm = mask.logical_not().type_as(inp)
