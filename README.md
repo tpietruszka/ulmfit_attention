@@ -1,4 +1,4 @@
-#ULMFiT attention
+# ULMFiT attention
 
 This package implements a **"Branching Attention"** classifier head (described [here](https://towardsdatascience.com/explainable-data-efficient-text-classification-888cc7a1af05?source=friends_link&sk=284db458af96fe4f5eee2a0d731384b5%27)).
 
@@ -18,7 +18,7 @@ framework.
 To install "as an app" - to reproduce results, run experiments, etc:
 
 Requirements: 
-- a CUDA-enabled GPU, recent enough to run PyTorch on, min 8GB memory
+- a CUDA-enabled GPU, recent enough to run PyTorch, min. 8GB memory
 - NVidia drivers installed (CUDA not necessary) 
 - Conda
 
@@ -42,11 +42,13 @@ mkdir ${IMDB}/models
 wget -O ${IMDB}/models/fwd_enc.pth https://static.purecode.pl/ulmfit_attention/imdb/fwd_enc.pth
 ```
 
-To test the install (including training a model on IMDB) run:
- `pytest --runslow`
+To **test the install**, including briefly training a model, run:
+ `pytest --runslow`. It should complete in a few minutes.
 
 In order to use the PyTorch modules defined here, this package can be also installed
-using pip, directly from github  
+using pip, directly from github:
+`pip install git+https://github.com/tpietruszka/ulmfit_attention.git#egg=ulmfit_attention`
+More work is needed before it will be ready for PyPI.
 
 ### Usage
 
@@ -56,7 +58,8 @@ inner `ulmfit_attention` and run:
 
 `hyperspace_worker.py ../tasks/ ulmfit_attention`
 
-For other usage modes - including interactive experimentation in Jupyter, see
+For instructions on submitting runs to the queue, and other usage modes -
+including interactive experimentation in Jupyter, see
 [hyperspace_explorer](https://github.com/tpietruszka/hyperspace_explorer).
 
 
