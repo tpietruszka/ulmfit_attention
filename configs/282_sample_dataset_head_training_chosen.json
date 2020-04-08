@@ -1,0 +1,34 @@
+{
+  "Classifier": {
+    "Aggregation": {
+      "agg_bn": false,
+      "agg_dropouts": [
+        0.2,
+        0
+      ],
+      "agg_layers": [
+        50,
+        10
+      ],
+      "att_bn": false,
+      "att_dropouts": [
+        0,
+        0
+      ],
+      "att_hid_layers": [
+        50
+      ],
+      "className": "BranchingAttentionAggregation"
+    },
+    "className": "AggregatingClassifier",
+    "drop_mult": 1.25,
+    "label_smoothing_eps": 0.1,
+    "lin_ftrs": []
+  },
+  "TrainingSchedule": {
+    "className": "HeadOnlySchedule",
+    "cycles": 20,
+    "lr": 0.02,
+    "wd": 0.1
+  }
+}
