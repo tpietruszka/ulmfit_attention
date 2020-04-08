@@ -3,7 +3,7 @@
 This package implements a **"Branching Attention"** classifier head (described [here](https://towardsdatascience.com/explainable-data-efficient-text-classification-888cc7a1af05?source=friends_link&sk=284db458af96fe4f5eee2a0d731384b5%27)).
 
 It is meant to be an improvement of the ULMFiT text classification algorithm - increasing
-**data efficiency**, as well as adding some degree of **explainability** (see 
+**data efficiency**, as well as adding some degree of **explainability** (see the
 [demo](https://ulmfit.purecode.pl) and the screencast below).
 
 ![Attention visualization screencast](https://github.com/tpietruszka/ulmfit_attention/raw/master/docs/figures/screencast.gif)
@@ -14,6 +14,9 @@ configurations of the architecture (+baseline) on the IMDb movie review dataset.
 It is based on the [hyperspace_explorer](https://github.com/tpietruszka/hyperspace_explorer) 
 framework.
 
+To skip the full setup and just reproduce results or quickly run some code, try
+`notebooks/example_interactive.ipynb`.
+
 ### Installation, setup
 To install "as an app" - to reproduce results, run experiments, etc:
 
@@ -23,7 +26,7 @@ Requirements:
 - Conda
 
 
-Warning: by default some data and a pre-trained encoder will be placed in
+Warning: by default, some data and a pre-trained encoder will be placed in
 `${HOME}/.fastai/`. This can be changed, but then a `FASTAI_HOME`
 variable has to be set at all times.
   
@@ -58,8 +61,6 @@ inner `ulmfit_attention` and run:
 
 `hyperspace_worker.py ../tasks/ ulmfit_attention`
 
-For instructions on submitting runs to the queue, and other usage modes -
-including interactive experimentation in Jupyter, see
+For instructions on submitting runs to the queue and other usage modes -
+including interactive experimentation in Jupyter - see
 [hyperspace_explorer](https://github.com/tpietruszka/hyperspace_explorer).
-
-
